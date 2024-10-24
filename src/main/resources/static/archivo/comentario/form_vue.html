@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="utf-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+	<!-- Bootstrap CSS -->
+	<link rel="stylesheet" href="../../lib/css/bootstrap.min.css">
+
+	<script src="../../lib/js/vue.js"></script>
+
+	<script src="../../lib/js/axios.min.js"></script>
+
+	<script src="../../lib/js/vue-axios.es5.js"></script>
+
+	<title>Ejemplo api rest con Vue</title>
+</head>
+
+<body>
+
+
+
+
+
+	<!DOCTYPE html>
+	<html>
+
+	<head>
+		<meta charset="utf-8">
+		<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+
+		<!-- Bootstrap CSS -->
+		<link rel="stylesheet" href="../../lib/css/bootstrap.min.css">
+
+		<script src="../../lib/js/vue.js"></script>
+
+		<script src="../../lib/js/axios.min.js"></script>
+
+		<script src="../../lib/js/vue-axios.es5.js"></script>
+
+		<title>{{titulo}}</title>
+	</head>
+
+	<body>
+
+		<div id="app">
+
+			<h3>{{comentario}}</h3>
+
+			<div class="card">
+				<div class="card-header">
+					<h3>{{titulo}}</h3>
+				</div>
+
+				<div class="card-body">
+					<div class="row mx-0">
+						<div class="col-8">
+							<div class="form-group row align-items-center">
+								<label for="texto" class="col-3 mb-0">Texto</label>
+								<input v-model="comentario.texto" type="text" class="form-control col-9" id="texto"
+									placeholder="Texto">
+							</div>
+						</div>
+						<div class="col-4 justify-content-end">
+							<div class="form-group row align-items-center">
+								<label for="comentarioEstrellas" class="col-auto mb-0">Estrellas</label>
+								<input v-model="comentario.estrellas" number="email" class="form-control col"
+									id="comentarioEstrellas" placeholder="Estrellas">
+							</div>
+						</div>
+					</div>
+					<div class="row mx-0">
+
+						<div class="col-4">
+							<div class="row justify-content-end">
+								<div class="col-auto">
+
+									<button @click="saveComentario(comentario)" type="button" class="btn btn-success">
+										Registrar
+									</button>
+									<button type="button" class="btn btn-danger">
+										Cancelar
+									</button>
+
+								</div>
+							</div>
+						</div>
+					</div>
+				</div>
+			</div>
+
+
+
+
+
+			<!--		TABLA INICIO-->
+
+			<div class="card mt-3">
+				<div class="card-header">
+					Lista de comentarios
+				</div>
+				<div class="card-body">
+
+					<table class="table table-striped">
+						<thead>
+							<tr>
+								<th scope="col">#</th>
+								<th scope="col">Texto</th>
+								<th scope="col">Estrellas</th>
+								<th scope="col">Editar</th>
+								<th scope="col">Eliminar</th>
+
+							</tr>
+						</thead>
+						<tbody v-for="comentario in comentarios" v-bind:key="comentario.id">
+							<tr>
+								<th scope="row">{{comentario.id}}</th>
+
+								<td>{{comentario.texto}}</td>
+								<td>{{comentario.estrellas}}</td>
+								<td>
+									<button @click="editarComentario(comentario)"	type="button" class="btn btn-info">
+																									 Editar
+																									</button></td>
+								<td>
+									
+									<button @click="eliminarComentario(comentario)" type="button" class="btn btn-danger">
+																	 Eliminar
+																	</button>
+								</td>
+							</tr>
+
+						</tbody>
+					</table>
+
+
+				</div>
+			</div>
+
+		</div>
+
+		<!--TABLA FIN-->
+
+
+
+		<script>
+			//inicializar el objeto vue que manipula el DOM 
+			//document objet model
+			var app = new Vue({
+				el: '#app',
+				data: {
+					"titulo": "API REST CON VUEJS",
+					"apiURL": "http://localhost:8080/api",
+					"comentarios": [], //array vacio
+					"comentario": {
+						"codigo" : "",
+						"texto" : "",
+						"estrellas" : ""
+					}  //vector vacio
+				},
+				created() {
+
+
+				},
+				mounted() {
+					//Al completar la carga del Dom se ejecuta automaticamente
+
+					this.getComentarios(); //invocar al metodo
+
+				},
+				methods: {
+					getComentarios() {
+						Vue.axios.get(this.apiURL + '/comentarios')
+							.then(response => {//ok
+								this.comentarios = response.data
+								console.log(response.data);
+							}).catch(error => console.log(error))
+					},//fin
+					saveComentario(comentario) {
+						//en caso de que no exista el codigo se elimina el atributo
+						// para poder crear un nuevo suscrito(editar/creacion)
+						if (this.comentario.id === "" || this.comentario.id === null) {
+							delete this.comentario.id;
+
+						}
+
+						Vue.axios.post(this.apiURL + '/comentario', comentario)
+							.then(response => {	//en caso de funcionar se ejecuta
+
+								console.log("registrado")
+								
+								this.comentario={};
+								//despues de registrar
+								this.getComentarios(); //vuelve a cargar la lista
+							}).catch(error => console.log(error))
+
+
+					},//fin
+					eliminarComentario(comentario) {
+						
+						//agregar confirmacion antes de su ejecucion
+						const confirmacion = confirm("Estas seguro de eliminar");
+						if(confirmacion) {
+							
+						
+						Vue.axios.delete(this.apiURL + '/comentario/' + comentario.id)
+							.then(response => {
+
+								console.log("se elimino");
+								this.getComentarios();
+								
+							}).catch(error => console.log(error))
+}
+					},
+					
+					editarComentario(comentario) {
+						//this.suscrito = suscrito;
+						this.comentario.id = comentario.id;
+						this.comentario.texto = comentario.texto;
+						this.comentario.estrellas = comentario.estrellas;
+					}
+
+
+
+				}
+			});
+
+		</script>
+		<!-- Optional JavaScript -->
+		<!-- jQuery first, then Popper.js, then Bootstrap JS -->
+		<script src="../../lib/js/jquery-3.4.1.min.js"></script>
+		<script src="../../lib/js/popper.min.js"></script>
+		<script src="../../lib/js/bootstrap.min.js"></script>
+	</body>
+
+	</html>
